@@ -34,7 +34,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	};
 	const int GROUND_HEIGHT = 700;
 	const int PL_SPD = 5;
-	const int PARTICLE_NUM = 8;
 	const int PARTICLE_SPREAD_SPD = 4;
 	const float PARTICLE_ROTATE_SPD = DX_PI_F / 36.0f;
 
@@ -44,11 +43,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	Transform player = { {32,32},{WIN_SIZE.x / 2,GROUND_HEIGHT - player.radius.y} };
 
-	Transform particle[PARTICLE_NUM]{};
+	Particle particle{};
+
+	/*Transform particle[PARTICLE_NUM]{};
 	bool isParticleExist = 0;
 	CAV particleTime{ 60 };
 	int particleDis = 0;
-	float particleAngle = 0.0f;
+	float particleAngle = 0.0f;*/
 
 	for (size_t i = 0; i < PARTICLE_NUM; i++)
 	{

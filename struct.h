@@ -77,9 +77,14 @@ public:
 	}
 };
 
-class Particle
+const int PARTICLE_NUM = 8;
+struct Particle
 {
-
+	Transform Transform[PARTICLE_NUM];
+	bool isExist;
+	CAV Time;
+	int Dis;
+	float Angle;
 };
 
 class Key
