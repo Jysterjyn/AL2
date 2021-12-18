@@ -80,11 +80,11 @@ public:
 const int PARTICLE_NUM = 8;
 struct Particle
 {
+	CAV time;
 	Transform Transform[PARTICLE_NUM];
 	bool isExist;
-	CAV Time;
-	int Dis;
-	float Angle;
+	int dis;
+	float angle;
 };
 
 class Key

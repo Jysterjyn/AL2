@@ -43,17 +43,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 	Transform player = { {32,32},{WIN_SIZE.x / 2,GROUND_HEIGHT - player.radius.y} };
 
-	Particle particle{};
-
-	/*Transform particle[PARTICLE_NUM]{};
-	bool isParticleExist = 0;
-	CAV particleTime{ 60 };
-	int particleDis = 0;
-	float particleAngle = 0.0f;*/
+	Particle particle = {60};
 
 	for (size_t i = 0; i < PARTICLE_NUM; i++)
 	{
-		particle[i].radius.x = 6;
+		particle.Transform[i].radius.x = 6;
 	}
 
 	while (!(ProcessMessage() == -1 || CheckHitKey(KEY_INPUT_ESCAPE)))
@@ -69,39 +63,39 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 		if (keys.PushButtion(KEY_INPUT_SPACE))
 		{
-			isParticleExist = 1;
+			particle.isExist = 1;
 		}
-		if (isParticleExist)
+		if (particle.isExist)
 		{
-			particleTime.var--;
-			particleDis += PARTICLE_SPREAD_SPD;
-			particleAngle += PARTICLE_ROTATE_SPD;
+			particle.time.var--;
+			particle.dis += PARTICLE_SPREAD_SPD;
+			particle.angle += PARTICLE_ROTATE_SPD;
 
 			for (size_t i = 0; i < PARTICLE_NUM; i++)
 			{
-				particle[i].pos.x = player.pos.x + particleDis *
-					cosf(DX_TWO_PI_F / (float)(PARTICLE_NUM) * (float)(i)+particleAngle);
-				particle[i].pos.y = player.pos.y + particleDis *
-					sinf(DX_TWO_PI_F / (float)(PARTICLE_NUM) * (float)(i)+particleAngle);
+				particle.Transform[i].pos.x = player.pos.x + particle.dis *
+					cosf(DX_TWO_PI_F / (float)(PARTICLE_NUM) * (float)(i)+particle.angle);
+				particle.Transform[i].pos.y = player.pos.y + particle.dis *
+					sinf(DX_TWO_PI_F / (float)(PARTICLE_NUM) * (float)(i)+particle.angle);
 			}
 
-			if (particleTime.var <= 0)
+			if (particle.time.var <= 0)
 			{
-				isParticleExist = 0;
-				particleTime.Reset();
-				particleDis = 0;
-				particleAngle = 0.0f;
+				particle.isExist = 0;
+				particle.time.Reset();
+				particle.dis = 0;
+				particle.angle = 0.0f;
 			}
 		}
 
 		// ---•`‰æˆ—---
 		DrawFillBox(0, GROUND_HEIGHT, WIN_SIZE.x, WIN_SIZE.y, COLOR[BLUE]);
 		player.DrawBoxT(COLOR[WHITE]);
-		if (isParticleExist)
+		if (particle.isExist)
 		{
 			for (size_t i = 0; i < PARTICLE_NUM; i++)
 			{
-				particle[i].DrawCircleT(COLOR[RED]);
+				particle.Transform[i].DrawCircleT(COLOR[RED]);
 			}
 		}
 
