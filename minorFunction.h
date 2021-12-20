@@ -14,3 +14,9 @@ int NumberLoop(int num, int max, int min = 0)
 	if (num < min)num = max - 1;
 	return num;
 }
+
+void Clamp(int& num, int min, int max)
+{
+	if (num < min) { num = min; }
+	if (num > max) { num = max; }
+}

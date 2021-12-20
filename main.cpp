@@ -32,8 +32,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		GetColor(222, 0, 0),GetColor(0, 222, 0),
 		GetColor(0, 0, 222)
 	};
+
 	const int GROUND_HEIGHT = 700;
-	const int PL_SPD = 5;
+
+	const int PRESS_SHAKE_RANGE = 64;
+	const int PRESS_SHAKE_INTERVAL = 6;
+
+	const int J_CIRCLE_START_R = 16;
+	const int J_CIRCLE_SPREAD_SPD = 6;
+
 	const int PARTICLE_SPREAD_SPD = 4;
 	const float PARTICLE_ROTATE_SPD = DX_PI_F / 36.0f;
 
@@ -41,9 +48,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	// キーボード情報用
 	Key keys{};
 
-	Transform player = { {32,32},{WIN_SIZE.x / 2,GROUND_HEIGHT - player.radius.y} };
+	Object player =
+	{
+		{32,32,WIN_SIZE.x / 2,GROUND_HEIGHT - player.transform.radius.y},
+		5,{{30},2,40},{}
+	};
 
-	Particle particle = {60};
+	Particle2 jumpCircle = { {10},{J_CIRCLE_START_R} };
+
+	Particle particle = { 60 };
 
 	for (size_t i = 0; i < PARTICLE_NUM; i++)
 	{
@@ -56,10 +69,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 		keys.GetKeyState();
 
 		// ---更新処理---
-		player.pos.x += (keys.now[KEY_INPUT_RIGHT] - keys.now[KEY_INPUT_LEFT]) * PL_SPD;
-		player.pos.y += (keys.now[KEY_INPUT_DOWN] - keys.now[KEY_INPUT_UP]) * PL_SPD;
-		Clamp(player.pos.x, player.radius.x, WIN_SIZE.x - player.radius.x);
-		Clamp(player.pos.y, player.radius.y, GROUND_HEIGHT - player.radius.y);
+		player.MoveAndJump(keys, player.transform.radius.x, WIN_SIZE.x - player.transform.radius.x,
+			GROUND_HEIGHT - player.transform.radius.y, player.transform.radius.y);
+		//player.Jump(keys, GROUND_HEIGHT - player.transform.radius.y, player.transform.radius.y);
+		player.Press(keys, GROUND_HEIGHT - player.transform.radius.y, PRESS_SHAKE_RANGE);
+		player.shake.Func(PRESS_SHAKE_INTERVAL, 2);
+		player.wave.Draw(240, 20, COLOR[RED]);
 
 		if (keys.PushButtion(KEY_INPUT_SPACE))
 		{
@@ -73,9 +88,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
 			for (size_t i = 0; i < PARTICLE_NUM; i++)
 			{
-				particle.Transform[i].pos.x = player.pos.x + particle.dis *
+				particle.Transform[i].pos.x = player.transform.pos.x + particle.dis *
 					cosf(DX_TWO_PI_F / (float)(PARTICLE_NUM) * (float)(i)+particle.angle);
-				particle.Transform[i].pos.y = player.pos.y + particle.dis *
+				particle.Transform[i].pos.y = player.transform.pos.y + particle.dis *
 					sinf(DX_TWO_PI_F / (float)(PARTICLE_NUM) * (float)(i)+particle.angle);
 			}
 
@@ -88,9 +103,34 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			}
 		}
 
+		if (keys.PushButtion(KEY_INPUT_UP))
+		{
+			jumpCircle.isExist = 1;
+			jumpCircle.time.Reset();
+			jumpCircle.Transform.radius.x = J_CIRCLE_START_R;
+			jumpCircle.Transform.pos =
+			{
+				player.transform.pos.x,
+				player.transform.pos.y + player.transform.radius.y * 2
+			};
+		}
+		if (jumpCircle.isExist)
+		{
+			jumpCircle.time.var--;
+			jumpCircle.Transform.radius.x += J_CIRCLE_SPREAD_SPD;
+
+			if (jumpCircle.time.var <= 0)
+			{
+				jumpCircle.time.Reset();
+				jumpCircle.isExist = 0;
+				jumpCircle.Transform.radius.x = J_CIRCLE_START_R;
+			}
+		}
+
 		// ---描画処理---
-		DrawFillBox(0, GROUND_HEIGHT, WIN_SIZE.x, WIN_SIZE.y, COLOR[BLUE]);
-		player.DrawBoxT(COLOR[WHITE]);
+		DrawFillBox(0+player.shake.num.x, GROUND_HEIGHT + player.shake.num.y,
+			WIN_SIZE.x + player.shake.num.x, WIN_SIZE.y, COLOR[BLUE]);
+		player.transform.DrawBoxT(COLOR[WHITE], player.shake.num);
 		if (particle.isExist)
 		{
 			for (size_t i = 0; i < PARTICLE_NUM; i++)
@@ -98,6 +138,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 				particle.Transform[i].DrawCircleT(COLOR[RED]);
 			}
 		}
+		if (jumpCircle.isExist) { jumpCircle.Transform.DrawCircleT(~WHITE, {}, 0); }
 
 		ScreenFlip();
 	}
